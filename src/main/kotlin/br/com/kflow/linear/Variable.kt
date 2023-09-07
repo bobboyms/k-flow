@@ -1,6 +1,4 @@
-package linear
-
-import Node
+package br.com.kflow.linear
 
 class Variable(private val values: List<Number>,
                private val shape: Array<Int>,

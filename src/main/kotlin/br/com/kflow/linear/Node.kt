@@ -1,7 +1,4 @@
-import linear.Add
-import linear.Constant
-import linear.Multiply
-import linear.Sub
+package br.com.kflow.linear
 
 abstract class Node<T: Number> {
     protected var gradient = Constant(0.0 as T)

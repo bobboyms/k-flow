@@ -1,6 +1,4 @@
-package linear
-
-import Node
+package br.com.kflow.linear
 
 // Use Node<Number> to specify that these operations apply to Nodes with Number types
 class Add(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
@@ -23,6 +21,27 @@ class Add(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
         nodeA.backward(gradient)  // Adjust as necessary
         nodeB.backward(gradient)  // Adjust as necessary
     }
+}
+
+class Exp(private val nodeA: Node<Number>) : Node<Number>() {
+
+    override fun value(): Constant<Number> {
+        if (value == null) {
+            value = Constant(values = nodeA.value().exp().values(), shape = nodeA.value().shape())
+        }
+        return value!!
+    }
+
+    override fun zeroGrad() {
+        super.zeroGrad()
+        nodeA.zeroGrad()
+    }
+
+    override fun backward(gradient: Constant<Number>) {
+        this.gradient += gradient
+        nodeA.backward(value!! * gradient)
+    }
+
 }
 
 class Sum(private val nodeA: Node<Number>) : Node<Number>() {
@@ -95,7 +114,7 @@ class Multiply(private val nodeA: Node<Number>, private val nodeB: Node<Number>)
     override fun backward(gradient: Constant<Number>) {
         this.gradient += gradient
         nodeA.backward(nodeB.value() * gradient)  // Derivada parcial em relação a 'a' é 'b'
-        nodeB.backward(nodeA.value() * gradient)
+        nodeB.backward(nodeA.value() * gradient)  // Derivada parcial em relação a 'b' é 'a'
     }
 }
 
@@ -153,7 +172,7 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
 
     }
 
-    private fun diff(cons: Constant<Number>):Constant<Number> {
+    private fun diff(cons: Constant<Number>): Constant<Number> {
         val shape = cons.shape()
         val row = shape[0]
         val col = shape[1]

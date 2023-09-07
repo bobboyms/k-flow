@@ -1,4 +1,4 @@
-package linear
+package br.com.kflow.linear
 
 interface Matrix {
     fun transpose(): Matrix
@@ -7,6 +7,7 @@ interface Matrix {
     fun getValue(vararg indices: Int): Number
     fun getColumn(colIndex: Int): List<Number>
     fun pow(power: Matrix): Matrix
+    fun exp():Matrix
     fun size():Int
 }
 
@@ -134,6 +135,10 @@ class Constant<T : Number>(
 
     override fun pow(power: Matrix): Constant<T> {
         return pow(this,power as Constant<T>)
+    }
+
+    override fun exp(): Constant<T> {
+        return exp(this)
     }
 
     override fun size(): Int {

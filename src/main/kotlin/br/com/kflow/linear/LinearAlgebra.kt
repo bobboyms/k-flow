@@ -1,6 +1,6 @@
-package linear
+package br.com.kflow.linear
 
-import java.lang.RuntimeException
+import kotlin.math.exp
 import kotlin.math.pow
 
 fun <T:Number> dot(other: Constant<T>, atual: Constant<T>): Constant<T> {
@@ -55,6 +55,8 @@ fun <T:Number> transpose(constant: Constant<T>): Constant<T> {
 
     return constant
 }
+
+
 
 fun <T:Number> pow(atual: Constant<T>, power: Constant<T>): Constant<T> {
     if (atual.shape()[0] == 1 && atual.shape()[1] == 1) {
@@ -151,6 +153,13 @@ fun <T:Number> mul(other: Constant<T>, atual: Constant<T>): Constant<T> {
 
         return Constant(newValues, atual.shape())
     }
+}
+
+fun <T:Number> exp(atual: Constant<T>): Constant<T> {
+    val values = atual.values().map {
+        exp(it.toDouble()).toT(atual.values()[0]::class.java)
+    }
+    return Constant(values = values, shape = atual.shape())
 }
 
 fun <T:Number> div(other: Constant<T>, atual: Constant<T>): Constant<T> {

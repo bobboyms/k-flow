@@ -1,4 +1,4 @@
-package linear
+package br.com.kflow.linear
 
 @Suppress("UNCHECKED_CAST")
 fun <T : Number> Number.toT(targetType: Class<out T>): T {

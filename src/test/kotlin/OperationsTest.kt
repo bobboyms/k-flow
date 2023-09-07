@@ -1,4 +1,4 @@
-import linear.*
+import br.com.kflow.linear.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
