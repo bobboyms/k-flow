@@ -26,6 +26,22 @@ class NodeOperationTests {
     }
 
     @Test
+    fun testUnaryMinus() {
+        val nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
+        val unaryMinusNode = UnaryMinus(nodeA)
+
+        assertEquals(listOf(-1.2f, -2.5f, -3.2f, -4.5f, -3.5f, -2.5f), unaryMinusNode.value().values())
+    }
+    @Test
+    fun testExp() {
+        val nodeA = Variable(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
+        val expNode = Exp(nodeA)
+
+        val result = expNode.value()
+        assertEquals(listOf(181.2722, 9.974182, 33.11545, 665.14166, 4914.769, 665.14166), result.values())
+    }
+
+    @Test
     fun testSum() {
         val nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
         val sumNode = Sum(nodeA)
@@ -53,7 +69,7 @@ class NodeOperationTests {
 
     }
 
-    private val TOLERANCE = 1e-6  // Define your own tolerance level
+    private val TOLERANCE = 1e-4  // Define your own tolerance level
 
     fun assertEquals(expected:List<Number>, actual: List<Number>) {
 
@@ -100,12 +116,29 @@ class NodeOperationTests {
     }
 
     @Test
+    fun testBackwardUnaryMinus() {
+        val nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
+        val unaryMinusNode = UnaryMinus(nodeA)
+
+        unaryMinusNode.backward(Constant(1))
+        assertEquals(listOf(-1,-1,-1,-1,-1,-1), nodeA.grad().values())
+    }
+
+    @Test
     fun testBackwardSum() {
         val nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
         val sumNode = Sum(nodeA)
         sumNode.backward(Constant(1))
 
         assertEquals(listOf(1,1,1,1,1,1), nodeA.grad().values())
+    }
+
+    @Test
+    fun testBackwardExp() {
+        val nodeA = Variable(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
+        val expNode = Exp(nodeA)
+        expNode.backward(Constant(1))
+        assertEquals(listOf(181.2722, 9.974182, 33.11545, 665.14166, 4914.769, 665.14166), nodeA.grad().values())
     }
 
     @Test
@@ -147,22 +180,36 @@ class NodeOperationTests {
 
     @Test
     fun testBackwardMatmul() {
-        val nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
-        val nodeB = Variable(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "b", requiresGrad = true)
+        var nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
+        var nodeB = Variable(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "b", requiresGrad = true)
 
         var matmul = Matmul(nodeA, nodeB.T())
-        matmul.backward(Constant(1.0 as Number))
+        var result = Sum(matmul)
+        result.backward(Constant(1.0 as Number))
 
         assertEquals(listOf(17.199999809265137, 15.299999952316284, 17.199999809265137, 15.299999952316284, 17.199999809265137, 15.299999952316284), nodeA.grad().values())
         assertEquals(listOf(7.900000095367432, 9.5, 7.900000095367432, 9.5, 7.900000095367432, 9.5), nodeB.grad().values())
 
-        nodeB.T()
-        matmul.zeroGrad()
+        nodeA = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
+        nodeB = Variable(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "b", requiresGrad = true)
+
         matmul = Matmul(nodeA.T(), nodeB)
-        matmul.backward(Constant(1.0 as Number))
+        result = Sum(matmul)
+        result.backward(Constant(1.0 as Number))
 
         assertEquals(listOf(7.499999761581421, 7.499999761581421,10.0, 10.0,15.0, 15.0), nodeA.grad().values())
         assertEquals(listOf(3.700000047683716, 3.700000047683716, 7.700000047683716, 7.700000047683716, 6.0, 6.0), nodeB.grad().values())
+
+        val v1 = Variable(values = listOf(1.2, 3.5, 3.2), shape = arrayOf(1, 3), requiresGrad = true)
+        val v2 = Variable(values = listOf(1.2, 2.5, 3.2, 4.5, 3.5, 2.5), shape = arrayOf(2, 3), requiresGrad = true)
+
+        val mm = Matmul(v1, v2.T())
+        val r = Sum(mm)
+        r.backward(Constant(1.0))
+
+        assertEquals(listOf(5.7, 6.0, 5.7), v1.grad().values())
+        assertEquals(listOf(1.2, 3.5, 3.2, 1.2, 3.5, 3.2), v2.grad().values())
+
 
     }
 

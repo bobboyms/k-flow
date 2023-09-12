@@ -21,7 +21,12 @@ abstract class Node<T: Number> {
     }
 
     fun T() : Node<T> {
-        transposed = !transposed
+//        transposed = !transposed
+        if (transposed) {
+            return this
+        }
+
+        transposed = true
         val t = value().transpose()
         value = Constant(t.values(),shape=t.shape())
         return this
@@ -44,4 +49,11 @@ operator fun Node<Number>.times(other: Node<Number>): Node<Number> {
 
 operator fun Node<Number>.minus(other: Node<Number>): Node<Number> {
     return Sub(this, other)
+}
+
+operator fun Node<Number>.div(other: Node<Number>): Node<Number> {
+    return Div(this, other)
+}
+operator fun Node<Number>.unaryMinus():Node<Number> {
+    return UnaryMinus(this)
 }

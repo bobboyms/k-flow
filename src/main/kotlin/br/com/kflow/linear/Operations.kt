@@ -39,9 +39,31 @@ class Exp(private val nodeA: Node<Number>) : Node<Number>() {
 
     override fun backward(gradient: Constant<Number>) {
         this.gradient += gradient
+        value()
         nodeA.backward(value!! * gradient)
     }
 
+}
+
+class UnaryMinus(private val nodeA: Node<Number>) : Node<Number>() {
+    override fun value(): Constant<Number> {
+        if (value == null) {
+            value = -nodeA.value()
+        }
+        return value!!
+    }
+
+    override fun zeroGrad() {
+        super.zeroGrad()
+        nodeA.zeroGrad()
+    }
+
+    override fun backward(gradient: Constant<Number>) {
+        this.gradient += gradient
+        val consA = Constant(values = List(nodeA.value().size()) { -1.0 as Number }, shape = nodeA.value().shape())
+
+        nodeA.backward(consA * gradient)
+    }
 }
 
 class Sum(private val nodeA: Node<Number>) : Node<Number>() {
@@ -64,7 +86,6 @@ class Sum(private val nodeA: Node<Number>) : Node<Number>() {
     override fun backward(gradient: Constant<Number>) {
         this.gradient += gradient
         val consA = Constant(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
-
         nodeA.backward(consA * gradient)
     }
 
@@ -95,6 +116,32 @@ class Sub(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
         nodeB.backward(consB * gradient)
     }
 }
+
+class Div(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
+    override fun value(): Constant<Number> {
+        if (value == null) {
+            value = nodeA.value() / nodeB.value()
+        }
+        return value!!
+    }
+
+    override fun zeroGrad() {
+        super.zeroGrad()
+        nodeA.zeroGrad()
+        nodeB.zeroGrad()
+    }
+
+    override fun backward(gradient: Constant<Number>) {
+        this.gradient += gradient
+
+        val consA = Constant(1.0 as Number) / nodeB.value()
+        val consB = -(nodeA.value() / nodeB.value().pow(Constant(2)))
+
+        nodeA.backward(consA * gradient)
+        nodeB.backward(consB * gradient)
+    }
+}
+
 
 class Multiply(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
 
@@ -139,6 +186,7 @@ class Pow(private val nodeA: Node<Number>, private val power: Constant<Number>) 
     }
 }
 
+
 class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
 
     override fun value(): Constant<Number> {
@@ -157,32 +205,20 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
     override fun backward(gradient: Constant<Number>) {
         this.gradient += gradient
 
-        val consA = Constant(values = nodeA.value().values(), shape = nodeA.value().shape())
-        val consB = Constant(values = nodeB.value().values(), shape = nodeB.value().shape())
-
         if (nodeA.transposed()) {
-            nodeB.backward(diff(consA).transpose() * gradient)
-            nodeA.backward(diff(consB.transpose()).transpose() * gradient)
+            nodeA.backward(gradient.dot(nodeB.value().transpose()).transpose())
+        } else {
+            nodeA.backward(gradient.dot(nodeB.value().transpose()))
         }
 
         if (nodeB.transposed()) {
-            nodeA.backward(diff(consB.transpose()) * gradient)
-            nodeB.backward(diff(consA) * gradient)
+            // Calculate d(A * B^T)/dB = (A^T * gradient)^T
+            val temp = nodeA.value().transpose().dot(gradient)
+            nodeB.backward(temp.transpose())
+        } else {
+            // Calculate d(A * B)/dB = A^T * gradient
+            nodeB.backward(nodeA.value().transpose().dot(gradient))
         }
-
-    }
-
-    private fun diff(cons: Constant<Number>): Constant<Number> {
-        val shape = cons.shape()
-        val row = shape[0]
-        val col = shape[1]
-
-        val colValues = Array(col) { i ->
-            cons.getColumn(i).sumOf { it.toDouble() }
-        }
-
-        val values = Array(row * col) { colValues[it % col] }
-        return Constant(values = values.map { it }, shape = shape)
     }
 
 }

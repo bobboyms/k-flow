@@ -81,6 +81,12 @@ fun <T:Number> pow(atual: Constant<T>, power: Constant<T>): Constant<T> {
     }
 
 }
+fun <T:Number> unaryMinus(atual: Constant<T>): Constant<T> {
+    val newValues = atual.values().map {
+        (-1 * it.toDouble()).toT(it::class.java)
+    }
+    return Constant(newValues, atual.shape())
+}
 
 fun <T:Number> plus(other: Constant<T>, atual: Constant<T>): Constant<T> {
     if (atual.shape()[0] == 1 && atual.shape()[1] == 1) {
@@ -166,7 +172,7 @@ fun <T:Number> div(other: Constant<T>, atual: Constant<T>): Constant<T> {
 
     if (atual.shape()[0] == 1 && atual.shape()[1] == 1) {
         val newValues = other.values().map {
-            (it.toDouble() / atual.values()[0].toDouble()).toT(it::class.java)
+            (atual.values()[0].toDouble() / it.toDouble()).toT(it::class.java)
         }
         return Constant(newValues, other.shape())
     } else if (other.shape()[0] == 1 && other.shape()[1] == 1) {

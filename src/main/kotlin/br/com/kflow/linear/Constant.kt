@@ -27,74 +27,115 @@ class Constant<T : Number>(
 
 
 
+//    override fun dot(other: Matrix): Constant<T> {
+//
+//        val shapeA = this.shape
+//        val shapeB = other.shape()
+//
+//        // Check if the matrices are compatible for dot product
+//        if (shapeA.last() != shapeB.first()) {
+//            throw IllegalArgumentException("The last dimension of the first matrix must be equal to the first dimension of the second matrix.")
+//        }
+//
+//        val commonDim = shapeA.last()
+//
+//        val newShape = shapeA.dropLast(1) + shapeB.drop(1)
+//
+//        val newValues = MutableList(newShape.reduce { acc, i -> acc * i }) { 0.0 }
+//
+//        when {
+//            // Both matrices are 2D
+//            shapeA.size == 2 && shapeB.size == 2 -> {
+//                val newRows = shapeA[0]
+//                val newCols = shapeB[1]
+//
+//                for (i in 0..<newRows) {
+//                    for (j in 0..<newCols) {
+//                        var sum = 0.0
+//                        for (k in 0..<commonDim) {
+//                            val aValue = this.getValue(i, k).toDouble()
+//                            val bValue = other.getValue(k, j).toDouble()
+//                            sum += aValue * bValue
+//                        }
+//                        newValues[i * newCols + j] = sum
+//                    }
+//                }
+//            }
+//
+//            // Both matrices are 3D
+//            shapeA.size == 3 && shapeB.size == 3 -> {
+//                val newDepth = shapeA[0]
+//                val newRows = shapeA[1]
+//                val newCols = shapeB[2]
+//
+//                for (d in 0..<newDepth) {
+//                    for (i in 0..<newRows) {
+//                        for (j in 0..<newCols) {
+//                            var sum = 0.0
+//                            for (k in 0..<commonDim) {
+//                                val aValue = this.getValue(d, i, k).toDouble()
+//                                val bValue = other.getValue(d, k, j).toDouble()
+//                                sum += aValue * bValue
+//                            }
+//                            newValues[d * newRows * newCols + i * newCols + j] = sum
+//                        }
+//                    }
+//                }
+//            }
+//
+//            else -> {
+//                throw IllegalArgumentException("Unsupported dimensions for dot product.")
+//            }
+//        }
+//
+//        val values = newValues.map {
+//            it.toT(values[0]::class.java)
+//        }
+//
+//        return Constant(values, newShape.toTypedArray())
+//    }
+
     override fun dot(other: Matrix): Constant<T> {
 
         val shapeA = this.shape
         val shapeB = other.shape()
 
-        // Check if the matrices are compatible for dot product
+        // Verifica se as matrizes são compatíveis para o produto escalar
         if (shapeA.last() != shapeB.first()) {
             throw IllegalArgumentException("The last dimension of the first matrix must be equal to the first dimension of the second matrix.")
         }
 
+        val newRows = shapeA[0]
+        val newCols = shapeB[1]
         val commonDim = shapeA.last()
 
-        val newShape = shapeA.dropLast(1) + shapeB.drop(1)
+        // Lista para armazenar os valores da nova matriz
+        val newValues = MutableList(newRows * newCols) { 0.0 }
 
-        val newValues = MutableList(newShape.reduce { acc, i -> acc * i }) { 0.0 }
-
-        when {
-            // Both matrices are 2D
-            shapeA.size == 2 && shapeB.size == 2 -> {
-                val newRows = shapeA[0]
-                val newCols = shapeB[1]
-
-                for (i in 0..<newRows) {
-                    for (j in 0..<newCols) {
-                        var sum = 0.0
-                        for (k in 0..<commonDim) {
-                            val aValue = this.getValue(i, k).toDouble()
-                            val bValue = other.getValue(k, j).toDouble()
-                            sum += aValue * bValue
-                        }
-                        newValues[i * newCols + j] = sum
-                    }
+        for (i in 0 until newRows) {
+            for (j in 0 until newCols) {
+                var sum = 0.0
+                for (k in 0 until commonDim) {
+                    val aValue = this.getValue(i, k).toDouble()
+                    val bValue = other.getValue(k, j).toDouble()
+                    sum += aValue * bValue
                 }
-            }
-
-            // Both matrices are 3D
-            shapeA.size == 3 && shapeB.size == 3 -> {
-                val newDepth = shapeA[0]
-                val newRows = shapeA[1]
-                val newCols = shapeB[2]
-
-                for (d in 0..<newDepth) {
-                    for (i in 0..<newRows) {
-                        for (j in 0..<newCols) {
-                            var sum = 0.0
-                            for (k in 0..<commonDim) {
-                                val aValue = this.getValue(d, i, k).toDouble()
-                                val bValue = other.getValue(d, k, j).toDouble()
-                                sum += aValue * bValue
-                            }
-                            newValues[d * newRows * newCols + i * newCols + j] = sum
-                        }
-                    }
-                }
-            }
-
-            else -> {
-                throw IllegalArgumentException("Unsupported dimensions for dot product.")
+                newValues[i * newCols + j] = sum
             }
         }
 
+        // Converte os valores para o tipo de número correto
         val values = newValues.map {
             it.toT(values[0]::class.java)
         }
 
-        return Constant(values, newShape.toTypedArray())
+        return Constant(values, arrayOf(newRows, newCols))
     }
 
+
+    operator fun unaryMinus():Constant<T> {
+        return unaryMinus(this)
+    }
 
     operator fun plus(other: Constant<T>): Constant<T> {
         return plus(other, this)
