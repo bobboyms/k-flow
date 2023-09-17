@@ -1,39 +1,40 @@
 package br.com.kflow.linear
 
-abstract class Node<T: Number> {
-    protected var gradient = Constant(0.0 as T)
-    abstract fun value(): Constant<T>
-    abstract fun backward(gradient: Constant<T>)
+import br.com.kflow.value.Value
 
-    protected var value: Constant<Number>? = null
+abstract class Node<T: Number> {
+    protected var gradient = Value(0.0 as T)
+    abstract fun value(): Value<T>
+    abstract fun backward(gradient: Value<T>)
+
+    protected var value: Value<Number>? = null
     private var transposed = false
 
     fun transposed():Boolean {
         return transposed
     }
 
-    fun grad():Constant<T> {
+    fun grad(): Value<T> {
         return gradient
     }
 
-    fun changeValue(value: Constant<Number>) {
+    fun changeValue(value: Value<Number>) {
         this.value = value
     }
 
     fun T() : Node<T> {
-//        transposed = !transposed
         if (transposed) {
             return this
         }
 
         transposed = true
         val t = value().transpose()
-        value = Constant(t.values(),shape=t.shape())
+        value = Value(t.values(),shape=t.shape())
         return this
     }
 
     open fun zeroGrad() {
-        this.gradient = Constant(0.0 as T)
+        this.gradient = Value(0.0 as T)
     }
 
 }

@@ -1,9 +1,11 @@
 package br.com.kflow.linear
 
+import br.com.kflow.value.Value
+
 // Use Node<Number> to specify that these operations apply to Nodes with Number types
 class Add(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
 
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = nodeA.value() + nodeB.value()
         }
@@ -16,7 +18,7 @@ class Add(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
         nodeB.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
         nodeA.backward(gradient)  // Adjust as necessary
         nodeB.backward(gradient)  // Adjust as necessary
@@ -25,9 +27,9 @@ class Add(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
 
 class Exp(private val nodeA: Node<Number>) : Node<Number>() {
 
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
-            value = Constant(values = nodeA.value().exp().values(), shape = nodeA.value().shape())
+            value = Value(values = nodeA.value().exp().values(), shape = nodeA.value().shape())
         }
         return value!!
     }
@@ -37,7 +39,7 @@ class Exp(private val nodeA: Node<Number>) : Node<Number>() {
         nodeA.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
         value()
         nodeA.backward(value!! * gradient)
@@ -46,7 +48,7 @@ class Exp(private val nodeA: Node<Number>) : Node<Number>() {
 }
 
 class UnaryMinus(private val nodeA: Node<Number>) : Node<Number>() {
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = -nodeA.value()
         }
@@ -58,9 +60,9 @@ class UnaryMinus(private val nodeA: Node<Number>) : Node<Number>() {
         nodeA.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
-        val consA = Constant(values = List(nodeA.value().size()) { -1.0 as Number }, shape = nodeA.value().shape())
+        val consA = Value(values = List(nodeA.value().size()) { -1.0 as Number }, shape = nodeA.value().shape())
 
         nodeA.backward(consA * gradient)
     }
@@ -68,12 +70,12 @@ class UnaryMinus(private val nodeA: Node<Number>) : Node<Number>() {
 
 class Sum(private val nodeA: Node<Number>) : Node<Number>() {
 
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
 
             val tempValue = nodeA.value().values().reduce { acc, number ->  acc.toDouble() + number.toDouble()}
                 .toT(nodeA.value().values()[0]::class.java)
-            value = Constant(tempValue)
+            value = Value(tempValue)
         }
         return value!!
     }
@@ -83,9 +85,9 @@ class Sum(private val nodeA: Node<Number>) : Node<Number>() {
         nodeA.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
-        val consA = Constant(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
+        val consA = Value(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
         nodeA.backward(consA * gradient)
     }
 
@@ -93,7 +95,7 @@ class Sum(private val nodeA: Node<Number>) : Node<Number>() {
 
 class Sub(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
 
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = nodeA.value() - nodeB.value()
         }
@@ -106,11 +108,11 @@ class Sub(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
         nodeB.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
 
-        val consA = Constant(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
-        val consB = Constant(values = List(nodeB.value().size()) { -1.0 as Number }, shape = nodeB.value().shape())
+        val consA = Value(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
+        val consB = Value(values = List(nodeB.value().size()) { -1.0 as Number }, shape = nodeB.value().shape())
 
         nodeA.backward(consA * gradient)
         nodeB.backward(consB * gradient)
@@ -118,7 +120,7 @@ class Sub(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
 }
 
 class Div(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = nodeA.value() / nodeB.value()
         }
@@ -131,11 +133,11 @@ class Div(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
         nodeB.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
 
-        val consA = Constant(1.0 as Number) / nodeB.value()
-        val consB = -(nodeA.value() / nodeB.value().pow(Constant(2)))
+        val consA = Value(1.0 as Number) / nodeB.value()
+        val consB = -(nodeA.value() / nodeB.value().pow(Value(2)))
 
         nodeA.backward(consA * gradient)
         nodeB.backward(consB * gradient)
@@ -145,7 +147,7 @@ class Div(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : No
 
 class Multiply(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
 
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = nodeA.value() * nodeB.value()
         }
@@ -158,15 +160,15 @@ class Multiply(private val nodeA: Node<Number>, private val nodeB: Node<Number>)
         nodeB.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
         nodeA.backward(nodeB.value() * gradient)  // Derivada parcial em relação a 'a' é 'b'
         nodeB.backward(nodeA.value() * gradient)  // Derivada parcial em relação a 'b' é 'a'
     }
 }
 
-class Pow(private val nodeA: Node<Number>, private val power: Constant<Number>) : Node<Number>() {
-    override fun value(): Constant<Number> {
+class Pow(private val nodeA: Node<Number>, private val power: Value<Number>) : Node<Number>() {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = nodeA.value().pow(power)
         }
@@ -178,10 +180,10 @@ class Pow(private val nodeA: Node<Number>, private val power: Constant<Number>) 
         nodeA.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
 
-        val diff = power * nodeA.value().pow(power - Constant(1))
+        val diff = power * nodeA.value().pow(power - Value(1))
         nodeA.backward(diff * gradient)
     }
 }
@@ -189,7 +191,7 @@ class Pow(private val nodeA: Node<Number>, private val power: Constant<Number>) 
 
 class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
 
-    override fun value(): Constant<Number> {
+    override fun value(): Value<Number> {
         if (value == null) {
             value = nodeA.value().dot(nodeB.value())
         }
@@ -202,7 +204,7 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
         nodeB.zeroGrad()
     }
 
-    override fun backward(gradient: Constant<Number>) {
+    override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
 
         if (nodeA.transposed()) {
