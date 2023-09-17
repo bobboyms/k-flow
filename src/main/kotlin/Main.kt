@@ -46,7 +46,9 @@ fun main(args: Array<String>) {
 //    xValues.value().printMatrix()
 
     val x = xValues.value()//.get2DSlice(0)
-    val y = xValues.value().transpose()//.transpose().get2DSlice(0)
+    val y = xValues.value()//.get2DSlice(1)
+
+//    y.printMatrix()
 
 //    x.printMatrix()
 

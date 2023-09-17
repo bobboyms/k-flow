@@ -358,27 +358,27 @@ fun dotBatched(local: DNarray, other: DNarray): Value<Number> {
     return Value(newValues, arrayOf(batchSize, newRows, newCols))
 }
 
-fun <T : Number> batchedMatmul(A: Value<T>, B: Value<T>): Value<T> {
-    val batch_size = A.shape()[0]
-    val rows_A = A.shape()[1]
-    val cols_A = A.shape()[2]
-    val rows_B = B.shape()[1]
-    val cols_B = B.shape()[2]
+fun <T : Number> batchedMatmul(local: Value<T>, other: Value<T>): Value<T> {
+    val batchSize = local.shape()[0]
+    val rowsA = local.shape()[1]
+    val colsA = local.shape()[2]
+    val rowsB = other.shape()[1]
+    val colsB = other.shape()[2]
 
-    if (cols_A != rows_B) throw IllegalArgumentException("The last dimension of A must match the second to last dimension of B")
+    if (colsA != rowsB) throw IllegalArgumentException("The last dimension of A must match the second to last dimension of B")
 
-    val cShape = arrayOf(batch_size, rows_A, cols_B)
-    val cValues = MutableList(batch_size * rows_A * cols_B) { 0.0 as T }
+    val cShape = arrayOf(batchSize, rowsA, colsB)
+    val cValues = MutableList(batchSize * rowsA * colsB) { 0.0 as T }
 
-    for (batch in 0..<batch_size) {
-        for (i in 0..<rows_A) {
-            for (j in 0..<cols_B) {
+    for (batch in 0..<batchSize) {
+        for (i in 0..<rowsA) {
+            for (j in 0..<colsB) {
                 var value = 0.0
-                for (k in 0..<cols_A) {
-                    value += A.getValue(batch, i, k).toDouble() * B.getValue(batch, k, j).toDouble()
+                for (k in 0..<colsA) {
+                    value += local.getValue(batch, i, k).toDouble() * other.getValue(batch, k, j).toDouble()
                 }
-                val index = batch * rows_A * cols_B + i * cols_B + j
-                cValues[index] = value.toT(A.values()[0]::class.java)
+                val index = batch * rowsA * colsB + i * colsB + j
+                cValues[index] = value.toT(local.values()[0]::class.java)
             }
         }
     }

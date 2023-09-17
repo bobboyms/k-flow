@@ -16,7 +16,25 @@ class Value<T : Number>(
     }
 
     constructor(value: T) : this(listOf(value), arrayOf(1, 1))
-//    constructor(values: List<T>, shape: Array<Int>) : this(values, shape, false)
+
+    fun permute(vararg dims: Int): Value<T> {
+        // Verificar se os índices fornecidos são válidos
+        if (dims.size != shape.size) {
+            throw IllegalArgumentException("The number of dimensions to permute should be equal to the number of dimensions in the tensor.")
+        }
+
+        // Novo formato do tensor
+        val newShape = Array(dims.size) { i -> shape[dims[i]] }
+
+        // Nova lista para armazenar os valores permutados
+        val newValues = MutableList(values.size) { 0.0 }
+
+        // Iterar sobre o tensor original para preencher o tensor permutado
+        // ... (implementação para preencher 'newValues' baseada em 'values' e 'newShape')
+
+        // Retorna um novo objeto Value com os valores e formato permutados
+        return Value(newValues as List<T>, newShape)
+    }
 
     override fun dot(other: DNarray): Value<T> {
 
