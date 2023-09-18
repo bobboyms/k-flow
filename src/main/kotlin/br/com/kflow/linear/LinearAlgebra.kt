@@ -233,58 +233,11 @@ fun dot2d(local: DNarray, other: DNarray): Value<Number> {
     return Value(values, arrayOf(newRows, newCols))
 }
 
-fun dot3d(local: DNarray, other: DNarray): Value<Number> {
-    val shapeA = local.shape()
-    val shapeB = other.shape()
-
-    if (shapeA.last() != shapeB.first()) {
-        throw IllegalArgumentException("The last dimension of the first tensor must be equal to the first dimension of the second tensor.")
-    }
-
-    val newDepth = if (shapeA.size > 2) shapeA[0] else 1
-    val newRows = shapeA[shapeA.size - 2]
-    val newCols = shapeB[shapeB.size - 1]
-    val commonDim = shapeA.last()
-
-    val newValues = MutableList(newDepth * newRows * newCols) { 0.0 }
-
-    for (d in 0..<newDepth) {
-        for (i in 0..<newRows) {
-            for (j in 0..<newCols) {
-                var sum = 0.0
-                for (k in 0..<commonDim) {
-                    val aValue = if (shapeA.size > 2) {
-                        (local as Value<*>).getValue(d, i, k).toDouble()
-                    } else {
-                        (local as Value<*>).getValue(i, k).toDouble()
-                    }
-
-                    val bValue = if (shapeB.size > 2) {
-                        (other as Value<*>).getValue(d, k, j).toDouble()
-                    } else {
-                        (other as Value<*>).getValue(k, j).toDouble()
-                    }
-
-                    sum += aValue * bValue
-                }
-                newValues[d * newRows * newCols + i * newCols + j] = sum
-            }
-        }
-    }
-
-    val values = newValues.map {
-        it.toT((local as Value<*>).values()[0]::class.java)
-    }
-
-    return Value(values, arrayOf(newDepth, newRows, newCols))
-}
-
 fun <T : Number> batchedMatmul(local: Value<T>, other: Value<T>): Value<T> {
     val batchSize = local.shape()[0]
     val rowsA = local.shape()[1]
     val colsB = other.shape()[2]
 
-    val cShape = arrayOf(batchSize, rowsA, colsB)
     val cValues = MutableList(batchSize * rowsA * colsB) { 0.0 as T }
 
     for (slice in 0..<batchSize) {

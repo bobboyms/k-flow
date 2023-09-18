@@ -86,9 +86,8 @@ class NodeOperationTests {
 
     @Test
     fun testMatmul() {
-        // Your setup code
         var nodeA = Tensor(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2))
-        val nodeB = Tensor(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2))
+        var nodeB = Tensor(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2))
         var matmulNode = Matmul(nodeA, nodeB.T())
 
         val result = matmulNode.value()
@@ -103,13 +102,50 @@ class NodeOperationTests {
             7, 8,
             ), shape = arrayOf(2,2,2), requiresGrad = true)
 
+        nodeB = Tensor(values = listOf(
+            1, 2,
+            3, 4,
+            5, 6,
+            7, 8,
+        ), shape = arrayOf(2,2,2), requiresGrad = true)
 
-        matmulNode = Matmul(nodeA,nodeA)
+
+        matmulNode = Matmul(nodeA,nodeB)
         assertEquals(listOf(7, 10,15, 22,67, 78,91, 106), matmulNode.value().values())
 
-        matmulNode = Matmul(nodeA,nodeA.T())
-//        assertEquals(listOf(7, 10,15, 22,67, 78,91, 106), matmulNode.value().values())
-        matmulNode.value().printMatrix()
+        nodeA = Tensor(values = listOf(
+            1, 2,
+            3, 4,
+            5, 6,
+            7, 8,
+        ), shape = arrayOf(2,2,2), requiresGrad = true)
+
+        nodeB = Tensor(values = listOf(
+            1, 2,
+            3, 4,
+            5, 6,
+            7, 8,
+        ), shape = arrayOf(2,2,2), requiresGrad = true)
+
+        matmulNode = Matmul(nodeA,nodeB.T())
+        assertEquals(listOf(7.0, 19.0,15.0, 43.0,34.0, 78.0,46.0, 106.0), matmulNode.value().values())
+
+        nodeA = Tensor(values = listOf(
+            1, 2,
+            3, 4,
+            5, 6,
+            7, 8,
+        ), shape = arrayOf(2,2,2), requiresGrad = true)
+
+        nodeB = Tensor(values = listOf(
+            1, 2,
+            3, 4,
+            5, 6,
+            7, 8,
+        ), shape = arrayOf(2,2,2), requiresGrad = true)
+
+        matmulNode = Matmul(nodeA.T(),nodeB)
+        assertEquals(listOf(16,22,24,34,52,60,76,88), matmulNode.value().values())
 
     }
 
