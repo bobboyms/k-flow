@@ -193,7 +193,7 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
 
     override fun value(): Value<Number> {
         if (value == null) {
-            value = nodeA.value().dot(nodeB.value())
+            value = nodeA.value().matmul(nodeB.value())
         }
         return value!!
     }
@@ -208,18 +208,18 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
         this.gradient += gradient
 
         if (nodeA.transposed()) {
-            nodeA.backward(gradient.dot(nodeB.value().transpose()).transpose())
+            nodeA.backward(gradient.matmul(nodeB.value().transpose()).transpose())
         } else {
-            nodeA.backward(gradient.dot(nodeB.value().transpose()))
+            nodeA.backward(gradient.matmul(nodeB.value().transpose()))
         }
 
         if (nodeB.transposed()) {
             // Calculate d(A * B^T)/dB = (A^T * gradient)^T
-            val temp = nodeA.value().transpose().dot(gradient)
+            val temp = nodeA.value().transpose().matmul(gradient)
             nodeB.backward(temp.transpose())
         } else {
             // Calculate d(A * B)/dB = A^T * gradient
-            nodeB.backward(nodeA.value().transpose().dot(gradient))
+            nodeB.backward(nodeA.value().transpose().matmul(gradient))
         }
     }
 

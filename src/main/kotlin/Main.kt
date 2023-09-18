@@ -35,25 +35,34 @@ class Dense(input: Int, neurons: Int) {
 
 fun main(args: Array<String>) {
 
-    val xValues = Tensor(values = listOf(
+    val local = Tensor(values = listOf(
         1, 2,
         3, 4,
         5, 6,
         7, 8,
+    ), shape = arrayOf(2,2,2), requiresGrad = true).value().transpose()
 
-    ), shape = arrayOf(2,2,2))
+    val other = Tensor(values = listOf(
+        1, 2,
+        3, 4,
+        5, 6,
+        7, 8,
+    ), shape = arrayOf(2,2,2), requiresGrad = true).value()
 
-//    xValues.value().printMatrix()
 
-    val x = xValues.value()//.get2DSlice(0)
-    val y = xValues.value()//.get2DSlice(1)
+    local.matmul(other).printMatrix()
+
+
+
+//    val n = x.dot(y)
+//    n.printMatrix()
 
 //    y.printMatrix()
 
 //    x.printMatrix()
 
-    val n = x.dot(y)
-    n.printMatrix()
+//    val n = x.dot(y)
+//    n.printMatrix()
 //    val r = Value(values = n.values(), shape = arrayOf(1,3,3))
 //    val r = Value(values = n.values(), shape = arrayOf(3,3,1))
 //    r.printMatrix()

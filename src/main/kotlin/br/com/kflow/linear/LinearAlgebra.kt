@@ -279,109 +279,27 @@ fun dot3d(local: DNarray, other: DNarray): Value<Number> {
     return Value(values, arrayOf(newDepth, newRows, newCols))
 }
 
-//fun dotBatched(local: DNarray, other: DNarray): Value<Number> {
-//    val shapeA = local.shape()
-//    val shapeB = other.shape()
-//
-//    if (shapeA.size < 3 || shapeB.size < 3) {
-//        throw IllegalArgumentException("Input tensors must have at least 3 dimensions for batched matrix multiplication.")
-//    }
-//
-//    if (shapeA[0] != shapeB[0]) {
-//        throw IllegalArgumentException("Batch sizes must match.")
-//    }
-//
-//    if (shapeA.last() != shapeB[shapeB.size - 2]) {
-//        throw IllegalArgumentException("The last dimension of the first tensor must be equal to the second to last dimension of the second tensor.")
-//    }
-//
-//    val batchSize = shapeA[0]
-//    val newRows = shapeA[shapeA.size - 2]
-//    val newCols = shapeB[shapeB.size - 1]
-//    val commonDim = shapeA.last()
-//
-//    val newValues = MutableList(batchSize * newRows * newCols) { 0.0 }
-//
-//    for (n in 0..<batchSize) {
-//        for (i in 0..<newRows) {
-//            for (j in 0..<newCols) {
-//                var sum = 0.0
-//                for (k in 0..<commonDim) {
-//                    val aValue = (local as Value<*>).getValue(n, i, k).toDouble()
-//                    val bValue = (other as Value<*>).getValue(n, k, j).toDouble()
-//                    sum += aValue * bValue
-//                }
-//                newValues[n * newRows * newCols + i * newCols + j] = sum
-//            }
-//        }
-//    }
-//
-//    val values = newValues.map {
-//        it.toT((local as Value<*>).values()[0]::class.java)
-//    }
-//
-//    return Value(values, arrayOf(batchSize, newRows, newCols))
-//}
-
-// Sua classe Value<T> continua a mesma
-
-// Sua função dot agora usa dotBatched para tensores com mais de duas dimensões
-fun dotBatched(local: DNarray, other: DNarray): Value<Number> {
-    val shapeA = local.shape()
-    val shapeB = other.shape()
-
-//    if (shapeA[0] != shapeB[0] || shapeA[2] != shapeB[2]) {
-//        throw IllegalArgumentException("Incompatible shapes.")
-//    }
-
-    val batchSize = shapeA[0]
-    val newRows = shapeA[1]
-    val newCols = shapeB[1]
-    val commonDim = shapeA[2]
-
-    val newValues = MutableList(batchSize * newRows * newCols) { 0.0 }
-
-    for (n in 0 until batchSize) {
-        for (i in 0 until newRows) {
-            for (j in 0 until newCols) {
-                var sum = 0.0
-                for (k in 0 until commonDim) {
-                    val aValue = (local as Value<*>).getValue(n, i, k).toDouble()
-                    val bValue = (other as Value<*>).getValue(n, j, k).toDouble()
-                    sum += aValue * bValue
-                }
-                newValues[(n * newRows * newCols) + (i * newCols) + j] = sum
-            }
-        }
-    }
-
-    return Value(newValues, arrayOf(batchSize, newRows, newCols))
-}
-
 fun <T : Number> batchedMatmul(local: Value<T>, other: Value<T>): Value<T> {
     val batchSize = local.shape()[0]
     val rowsA = local.shape()[1]
-    val colsA = local.shape()[2]
-    val rowsB = other.shape()[1]
     val colsB = other.shape()[2]
-
-    if (colsA != rowsB) throw IllegalArgumentException("The last dimension of A must match the second to last dimension of B")
 
     val cShape = arrayOf(batchSize, rowsA, colsB)
     val cValues = MutableList(batchSize * rowsA * colsB) { 0.0 as T }
 
-    for (batch in 0..<batchSize) {
+    for (slice in 0..<batchSize) {
+        val x = local.get2DSlice(slice)
+        val y = other.get2DSlice(slice)
+        val c = x.matmul(y)
+
         for (i in 0..<rowsA) {
             for (j in 0..<colsB) {
-                var value = 0.0
-                for (k in 0..<colsA) {
-                    value += local.getValue(batch, i, k).toDouble() * other.getValue(batch, k, j).toDouble()
-                }
-                val index = batch * rowsA * colsB + i * colsB + j
-                cValues[index] = value.toT(local.values()[0]::class.java)
+                val value = c.getValue(i, j)
+                val index = slice * rowsA * colsB + i * colsB + j
+                cValues[index] = value
             }
         }
     }
 
-    return Value(cValues as List<T>, cShape)
+    return Value(values = cValues, shape = arrayOf(batchSize, rowsA, colsB))
 }

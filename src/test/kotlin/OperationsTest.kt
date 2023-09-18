@@ -87,14 +87,29 @@ class NodeOperationTests {
     @Test
     fun testMatmul() {
         // Your setup code
-        val nodeA = Tensor(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2))
+        var nodeA = Tensor(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2))
         val nodeB = Tensor(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2))
-        val matmulNode = Matmul(nodeA, nodeB.T())
+        var matmulNode = Matmul(nodeA, nodeB.T())
 
         val result = matmulNode.value()
 
         val expected = listOf(11.99, 20.45, 26.45, 26.99, 40.45, 56.45, 23.949999, 28.5, 46.0)
         assertEquals(expected, result.values())
+
+        nodeA = Tensor(values = listOf(
+            1, 2,
+            3, 4,
+            5, 6,
+            7, 8,
+            ), shape = arrayOf(2,2,2), requiresGrad = true)
+
+
+        matmulNode = Matmul(nodeA,nodeA)
+        assertEquals(listOf(7, 10,15, 22,67, 78,91, 106), matmulNode.value().values())
+
+        matmulNode = Matmul(nodeA,nodeA.T())
+//        assertEquals(listOf(7, 10,15, 22,67, 78,91, 106), matmulNode.value().values())
+        matmulNode.value().printMatrix()
 
     }
 

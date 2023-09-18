@@ -36,7 +36,7 @@ class Value<T : Number>(
         return Value(newValues as List<T>, newShape)
     }
 
-    override fun dot(other: DNarray): Value<T> {
+    override fun matmul(other: DNarray): Value<T> {
 
         if (this.shape.size == 2) {
             return dot2d(this, other) as Value<T>
