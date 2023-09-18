@@ -1,6 +1,7 @@
 package br.com.kflow.linear
 
 import br.com.kflow.value.Value
+import java.lang.RuntimeException
 
 abstract class Node<T: Number> {
     protected var gradient = Value(0.0 as T)
@@ -28,9 +29,28 @@ abstract class Node<T: Number> {
         }
 
         transposed = true
-        val t = value().transpose()
-        value = Value(t.values(),shape=t.shape())
-        return this
+        if (value().shape().size == 2) {
+            val t = value().transpose()
+            value = Value(t.values(),shape=t.shape())
+            return this
+        }
+
+        if (value().shape().size == 3) {
+
+            val batch = value().shape()[0]
+            if (value().shape()[1] == batch && value().shape()[2] == batch) {
+                val t = value().transpose()
+                value = Value(t.values(),shape=t.shape())
+                return this
+            }
+
+            val t = value().transposeLast2Dims()
+            value = Value(t.values(),shape=t.shape())
+            return this
+        }
+
+        throw RuntimeException("Invalid shape for that operation")
+
     }
 
     open fun zeroGrad() {

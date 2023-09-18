@@ -35,34 +35,38 @@ class Dense(input: Int, neurons: Int) {
 
 fun main(args: Array<String>) {
 
-    val local = Tensor(values = listOf(
-        1, 2, 3,
-        4, 5, 6,
-        7, 8, 9,
-        10, 11, 12,
-        13, 14, 15,
-        16, 17, 18,
-    ), shape = arrayOf(2,3,3), requiresGrad = true).value()
 
+    val local = Tensor(values = listOf(
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        9, 10, 11, 12,
+        13, 14, 15, 16,
+        17, 18, 19, 20,
+        21, 22, 23, 24,
+    ), shape = arrayOf(3,2,4), requiresGrad = true)
 
     val other = Tensor(values = listOf(
-        1, 2, 3,
-        4, 5, 6,
-        7, 8, 9,
-        10, 11, 12,
-        13, 14, 15,
-        16, 17, 18,
-    ), shape = arrayOf(2,3,3), requiresGrad = true).value()
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        9, 10, 11, 12,
+        13, 14, 15, 16,
+        17, 18, 19, 20,
+        21, 22, 23, 24,
+    ), shape = arrayOf(3,2,4), requiresGrad = true)
 
-//    [[[ 30.  84.]
-//        [ 66. 201.]
-//        [102. 318.]]
+    val x = Matmul(local, other.T())
+
+    val n = Sum(x)
+    n.backward(Value(1.0))
+//    [[[ 6.,  8., 10., 12.],
+//        [ 6.,  8., 10., 12.]],
 //
-//        [[171. 468.]
-//        [216. 594.]
-//        [261. 720.]]]
-
-    local.matmul(other).printMatrix()
+//        [[22., 24., 26., 28.],
+//            [22., 24., 26., 28.]],
+//
+//        [[38., 40., 42., 44.],
+//            [38., 40., 42., 44.]
+    other.grad().printMatrix()
 
 
 

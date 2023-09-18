@@ -1,6 +1,7 @@
 package br.com.kflow.linear
 
 import br.com.kflow.value.Value
+import java.lang.RuntimeException
 
 // Use Node<Number> to specify that these operations apply to Nodes with Number types
 class Add(private val nodeA: Node<Number>, private val nodeB: Node<Number>) : Node<Number>() {
@@ -207,20 +208,43 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
     override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
 
-        if (nodeA.transposed()) {
-            nodeA.backward(gradient.matmul(nodeB.value().transpose()).transpose())
+        if (gradient.shape().size == 2) {
+            if (nodeA.transposed()) {
+                nodeA.backward(gradient.matmul(nodeB.value().transpose()).transpose())
+            } else {
+                nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+            }
+
+            if (nodeB.transposed()) {
+                // Calculate d(A * B^T)/dB = (A^T * gradient)^T
+                val temp = nodeA.value().transpose().matmul(gradient)
+                nodeB.backward(temp.transpose())
+            } else {
+                // Calculate d(A * B)/dB = A^T * gradient
+                nodeB.backward(nodeA.value().transpose().matmul(gradient))
+            }
+        } else if (gradient.shape().size == 3) {
+            if (nodeA.transposed()) {
+                nodeA.backward(gradient.matmul(nodeB.value().transposeLast2Dims()))
+            } else {
+                if (nodeB.transposed()) {
+                    nodeA.backward(gradient.matmul(nodeB.value().transposeLast2Dims()))
+                } else {
+                    nodeA.backward(gradient.matmul(nodeB.value()))
+                }
+            }
+
+            if (nodeB.transposed()) {
+                val temp = nodeA.value().transposeLast2Dims().matmul(gradient)
+                nodeB.backward(temp.transposeLast2Dims())
+            } else {
+                nodeB.backward(nodeA.value().transposeLast2Dims().matmul(gradient))
+            }
         } else {
-            nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+            throw RuntimeException("Operation not supported for that NDarray shape")
         }
 
-        if (nodeB.transposed()) {
-            // Calculate d(A * B^T)/dB = (A^T * gradient)^T
-            val temp = nodeA.value().transpose().matmul(gradient)
-            nodeB.backward(temp.transpose())
-        } else {
-            // Calculate d(A * B)/dB = A^T * gradient
-            nodeB.backward(nodeA.value().transpose().matmul(gradient))
-        }
+
     }
 
 }

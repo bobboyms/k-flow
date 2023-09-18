@@ -2,6 +2,7 @@ package br.com.kflow.value
 
 interface DNarray {
     fun transpose(): DNarray
+    fun transposeLast2Dims(): DNarray
     fun shape():Array<Int>
     fun matmul(other: DNarray): DNarray
     fun pow(power: DNarray): DNarray

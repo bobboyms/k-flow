@@ -147,6 +147,27 @@ class NodeOperationTests {
         matmulNode = Matmul(nodeA.T(),nodeB)
         assertEquals(listOf(16,22,24,34,52,60,76,88), matmulNode.value().values())
 
+        nodeA = Tensor(values = listOf(
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16,
+            17, 18, 19, 20,
+            21, 22, 23, 24,
+        ), shape = arrayOf(3,2,4), requiresGrad = true)
+
+        nodeB = Tensor(values = listOf(
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16,
+            17, 18, 19, 20,
+            21, 22, 23, 24,
+        ), shape = arrayOf(3,2,4), requiresGrad = true)
+
+        matmulNode = Matmul(nodeA, nodeB.T())
+        assertEquals(listOf(30.0, 70.0,70.0, 174.0,446.0, 614.0,614.0, 846.0,1374.0, 1670.0,1670.0, 2030.0), matmulNode.value().values())
+
     }
 
     @Test
@@ -262,6 +283,39 @@ class NodeOperationTests {
         assertEquals(listOf(5.7, 6.0, 5.7), v1.grad().values())
         assertEquals(listOf(1.2, 3.5, 3.2, 1.2, 3.5, 3.2), v2.grad().values())
 
+        //***
+
+        val local = Tensor(values = listOf(
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16,
+            17, 18, 19, 20,
+            21, 22, 23, 24,
+        ), shape = arrayOf(3,2,4), requiresGrad = true)
+
+        val other = Tensor(values = listOf(
+            1, 2, 3, 4,
+            5, 6, 7, 8,
+            9, 10, 11, 12,
+            13, 14, 15, 16,
+            17, 18, 19, 20,
+            21, 22, 23, 24,
+        ), shape = arrayOf(3,2,4), requiresGrad = true)
+
+        val x = Matmul(local, other.T())
+
+        val n = Sum(x)
+        n.backward(Value(1.0))
+        assertEquals(listOf(6.0, 8.0, 10.0, 12.0,6.0, 8.0, 10.0, 12.0,22.0, 24.0, 26.0, 28.0,
+            22.0, 24.0, 26.0, 28.0,
+            38.0, 40.0, 42.0, 44.0,
+            38.0, 40.0, 42.0, 44.0), local.grad().values())
+
+        assertEquals(listOf(6.0, 8.0, 10.0, 12.0,6.0, 8.0, 10.0, 12.0,22.0, 24.0, 26.0, 28.0,
+            22.0, 24.0, 26.0, 28.0,
+            38.0, 40.0, 42.0, 44.0,
+            38.0, 40.0, 42.0, 44.0), local.grad().values())
 
     }
 

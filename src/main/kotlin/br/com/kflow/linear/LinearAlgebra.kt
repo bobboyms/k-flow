@@ -59,6 +59,29 @@ fun <T:Number> transpose3d(value: Value<T>): Value<T> {
     return Value(transposedValues, arrayOf(d3, d2, d1))
 }
 
+fun <T:Number> transposeLast2Dims(value: Value<T>): Value<T> {
+    val shape = value.shape()
+    val values = value.values()
+
+    val d1 = shape[0]
+    val d2 = shape[1]
+    val d3 = shape[2]
+
+    val transposedValues = MutableList(values.size) { 0 as Any } as MutableList<T>
+
+    for (i in 0..<d1) {
+        for (j in 0..<d2) {
+            for (k in 0..<d3) {
+                val oldIndex = i * d2 * d3 + j * d3 + k
+                val newIndex = i * d2 * d3 + k * d2 + j
+                transposedValues[newIndex] = values[oldIndex]
+            }
+        }
+    }
+
+    return Value(transposedValues, arrayOf(d1, d3, d2))
+}
+
 
 
 fun <T:Number> pow(atual: Value<T>, power: Value<T>): Value<T> {
@@ -237,6 +260,13 @@ fun <T : Number> batchedMatmul(local: Value<T>, other: Value<T>): Value<T> {
     val batchSize = local.shape()[0]
     val rowsA = local.shape()[1]
     val colsB = other.shape()[2]
+
+//    println(batchSize)
+//    println(other.shape()[0])
+
+    if (batchSize != other.shape()[0]) {
+        throw IllegalArgumentException("The batch size is different between the 2 NDarray")
+    }
 
     val cValues = MutableList(batchSize * rowsA * colsB) { 0.0 as T }
 

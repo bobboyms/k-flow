@@ -17,25 +17,6 @@ class Value<T : Number>(
 
     constructor(value: T) : this(listOf(value), arrayOf(1, 1))
 
-    fun permute(vararg dims: Int): Value<T> {
-        // Verificar se os índices fornecidos são válidos
-        if (dims.size != shape.size) {
-            throw IllegalArgumentException("The number of dimensions to permute should be equal to the number of dimensions in the tensor.")
-        }
-
-        // Novo formato do tensor
-        val newShape = Array(dims.size) { i -> shape[dims[i]] }
-
-        // Nova lista para armazenar os valores permutados
-        val newValues = MutableList(values.size) { 0.0 }
-
-        // Iterar sobre o tensor original para preencher o tensor permutado
-        // ... (implementação para preencher 'newValues' baseada em 'values' e 'newShape')
-
-        // Retorna um novo objeto Value com os valores e formato permutados
-        return Value(newValues as List<T>, newShape)
-    }
-
     override fun matmul(other: DNarray): Value<T> {
 
         if (this.shape.size == 2) {
@@ -85,6 +66,13 @@ class Value<T : Number>(
 
         throw RuntimeException("this operation is not allowed for the shape " + shape.size + "D")
 
+    }
+
+    override fun transposeLast2Dims(): Value<T> {
+        if (shape.size != 3) {
+            throw RuntimeException("the NDarray shape need be 3D")
+        }
+        return transposeLast2Dims(this)
     }
 
     override fun shape(): Array<Int> {
