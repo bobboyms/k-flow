@@ -61,19 +61,19 @@ class Value<T : Number>(
         }
 
         if (shape.size == 3) {
-            return transpose3d(this)
+            return transposeLast2Dims(this)
         }
 
         throw RuntimeException("this operation is not allowed for the shape " + shape.size + "D")
 
     }
 
-    override fun transposeLast2Dims(): Value<T> {
-        if (shape.size != 3) {
-            throw RuntimeException("the NDarray shape need be 3D")
-        }
-        return transposeLast2Dims(this)
-    }
+//    override fun transposeLast2Dims(): Value<T> {
+//        if (shape.size != 3) {
+//            throw RuntimeException("the NDarray shape need be 3D")
+//        }
+//        return transposeLast2Dims(this)
+//    }
 
     override fun shape(): Array<Int> {
         return shape

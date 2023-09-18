@@ -88,7 +88,7 @@ class NodeOperationTests {
     fun testMatmul() {
         var nodeA = Tensor(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2))
         var nodeB = Tensor(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2))
-        var matmulNode = Matmul(nodeA, nodeB.T())
+        var matmulNode = Matmul(nodeA, nodeB.transpose())
 
         val result = matmulNode.value()
 
@@ -127,8 +127,9 @@ class NodeOperationTests {
             7, 8,
         ), shape = arrayOf(2,2,2), requiresGrad = true)
 
-        matmulNode = Matmul(nodeA,nodeB.T())
-        assertEquals(listOf(7.0, 19.0,15.0, 43.0,34.0, 78.0,46.0, 106.0), matmulNode.value().values())
+        matmulNode = Matmul(nodeA,nodeB.transpose())
+
+        assertEquals(listOf(5.0, 11.0, 11.0, 25.0, 61.0, 83.0, 83.0, 113.0), matmulNode.value().values())
 
         nodeA = Tensor(values = listOf(
             1, 2,
@@ -144,8 +145,8 @@ class NodeOperationTests {
             7, 8,
         ), shape = arrayOf(2,2,2), requiresGrad = true)
 
-        matmulNode = Matmul(nodeA.T(),nodeB)
-        assertEquals(listOf(16,22,24,34,52,60,76,88), matmulNode.value().values())
+        matmulNode = Matmul(nodeA.transpose(),nodeB)
+        assertEquals(listOf(10.0, 14.0, 14.0, 20.0, 74.0, 86.0, 86.0, 100.0), matmulNode.value().values())
 
         nodeA = Tensor(values = listOf(
             1, 2, 3, 4,
@@ -165,8 +166,8 @@ class NodeOperationTests {
             21, 22, 23, 24,
         ), shape = arrayOf(3,2,4), requiresGrad = true)
 
-        matmulNode = Matmul(nodeA, nodeB.T())
-        assertEquals(listOf(30.0, 70.0,70.0, 174.0,446.0, 614.0,614.0, 846.0,1374.0, 1670.0,1670.0, 2030.0), matmulNode.value().values())
+        matmulNode = Matmul(nodeA, nodeB.transpose())
+        assertEquals(listOf(30.0, 70.0,70.0, 174.0,446.0, 614.0, 614.0, 846.0,1374.0, 1670.0, 1670.0, 2030.0), matmulNode.value().values())
 
     }
 
@@ -256,7 +257,7 @@ class NodeOperationTests {
         var nodeA = Tensor(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
         var nodeB = Tensor(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "b", requiresGrad = true)
 
-        var matmul = Matmul(nodeA, nodeB.T())
+        var matmul = Matmul(nodeA, nodeB.transpose())
         var result = Sum(matmul)
         result.backward(Value(1.0 as Number))
 
@@ -266,7 +267,7 @@ class NodeOperationTests {
         nodeA = Tensor(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(3, 2), name = "a", requiresGrad = true)
         nodeB = Tensor(values = listOf(5.2f, 2.3f, 3.5f, 6.5f, 8.5f, 6.5f), shape = arrayOf(3, 2), name = "b", requiresGrad = true)
 
-        matmul = Matmul(nodeA.T(), nodeB)
+        matmul = Matmul(nodeA.transpose(), nodeB)
         result = Sum(matmul)
         result.backward(Value(1.0 as Number))
 
@@ -276,14 +277,12 @@ class NodeOperationTests {
         val v1 = Tensor(values = listOf(1.2, 3.5, 3.2), shape = arrayOf(1, 3), requiresGrad = true)
         val v2 = Tensor(values = listOf(1.2, 2.5, 3.2, 4.5, 3.5, 2.5), shape = arrayOf(2, 3), requiresGrad = true)
 
-        val mm = Matmul(v1, v2.T())
+        val mm = Matmul(v1, v2.transpose())
         val r = Sum(mm)
         r.backward(Value(1.0))
 
         assertEquals(listOf(5.7, 6.0, 5.7), v1.grad().values())
         assertEquals(listOf(1.2, 3.5, 3.2, 1.2, 3.5, 3.2), v2.grad().values())
-
-        //***
 
         val local = Tensor(values = listOf(
             1, 2, 3, 4,
@@ -303,7 +302,7 @@ class NodeOperationTests {
             21, 22, 23, 24,
         ), shape = arrayOf(3,2,4), requiresGrad = true)
 
-        val x = Matmul(local, other.T())
+        val x = Matmul(local, other.transpose())
 
         val n = Sum(x)
         n.backward(Value(1.0))
@@ -315,7 +314,7 @@ class NodeOperationTests {
         assertEquals(listOf(6.0, 8.0, 10.0, 12.0,6.0, 8.0, 10.0, 12.0,22.0, 24.0, 26.0, 28.0,
             22.0, 24.0, 26.0, 28.0,
             38.0, 40.0, 42.0, 44.0,
-            38.0, 40.0, 42.0, 44.0), local.grad().values())
+            38.0, 40.0, 42.0, 44.0), other.grad().values())
 
     }
 

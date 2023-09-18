@@ -9,11 +9,11 @@ class Dense(input: Int, neurons: Int) {
 //    var b = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(1, neurons), name = "a", requiresGrad = true)
 
     fun forward(x:Node<Number>, activation: (variable: Node<Number>) -> Node<Number>):Node<Number> {
-        return activation(Matmul(x,w.T()))
+        return activation(Matmul(x,w.transpose()))
     }
 
     fun forward(x:Node<Number>):Node<Number> {
-        return Matmul(x,w.T())
+        return Matmul(x,w.transpose())
     }
 
     fun w():Node<Number> {
@@ -35,39 +35,40 @@ class Dense(input: Int, neurons: Int) {
 
 fun main(args: Array<String>) {
 
-
     val local = Tensor(values = listOf(
-        1, 2, 3, 4,
-        5, 6, 7, 8,
-        9, 10, 11, 12,
-        13, 14, 15, 16,
-        17, 18, 19, 20,
-        21, 22, 23, 24,
-    ), shape = arrayOf(3,2,4), requiresGrad = true)
+        1, 2,
+        3, 4,
+        5, 6,
+        7, 8,
+    ), shape = arrayOf(2,2,2), requiresGrad = true)
 
     val other = Tensor(values = listOf(
-        1, 2, 3, 4,
-        5, 6, 7, 8,
-        9, 10, 11, 12,
-        13, 14, 15, 16,
-        17, 18, 19, 20,
-        21, 22, 23, 24,
-    ), shape = arrayOf(3,2,4), requiresGrad = true)
+        1, 2,
+        3, 4,
+        5, 6,
+        7, 8,
+    ), shape = arrayOf(2,2,2), requiresGrad = true)
 
-    val x = Matmul(local, other.T())
-
+    val x = Matmul(local, other)
     val n = Sum(x)
     n.backward(Value(1.0))
-//    [[[ 6.,  8., 10., 12.],
-//        [ 6.,  8., 10., 12.]],
-//
-//        [[22., 24., 26., 28.],
-//            [22., 24., 26., 28.]],
-//
-//        [[38., 40., 42., 44.],
-//            [38., 40., 42., 44.]
+
+    println("local")
+    local.grad().printMatrix()
+    println("other")
     other.grad().printMatrix()
 
+//    [[[ 6., 10.],
+//        [ 6., 10.]],
+//
+//        [[ 8., 12.],
+//            [ 8., 12.]]])
+//    xxxx
+//    tensor([[[ 4., 12.],
+//        [ 6., 14.]],
+//
+//        [[ 4., 12.],
+//            [ 6., 14.]]]
 
 
 //    val n = x.dot(y)

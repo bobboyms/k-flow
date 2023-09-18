@@ -205,41 +205,68 @@ class Matmul(private val nodeA: Node<Number>, private val nodeB: Node<Number>) :
         nodeB.zeroGrad()
     }
 
+    private fun backward2D() {
+        if (nodeA.transposed()) {
+            nodeA.backward(gradient.matmul(nodeB.value().transpose()).transpose())
+        } else {
+            nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+        }
+
+        if (nodeB.transposed()) {
+            val temp = nodeA.value().transpose().matmul(gradient)
+            nodeB.backward(temp.transpose())
+        } else {
+            nodeB.backward(nodeA.value().transpose().matmul(gradient))
+        }
+    }
+
+    private fun backward3D() {
+
+        if (nodeA.transposed()) {
+            nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+        } else {
+            if (nodeB.transposed()) {
+                nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+            } else {
+                nodeA.backward(gradient.matmul(nodeB.value()))
+            }
+        }
+
+        if (nodeB.transposed()) {
+            val temp = nodeA.value().transpose().matmul(gradient)
+            nodeB.backward(temp.transpose())
+        } else {
+            nodeB.backward(nodeA.value().transpose().matmul(gradient))
+        }
+
+//        if (nodeA.transposed()) {
+//            nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+//        } else {
+//            if (nodeB.transposed()) {
+//                nodeA.backward(gradient.matmul(nodeB.value().transpose()))
+//            } else {
+//                println("xxxx")
+//                nodeA.backward(gradient.matmul(nodeB.transpose().value()))
+//            }
+//        }
+//
+//        if (nodeB.transposed()) {
+//            val temp = nodeA.value().transpose().matmul(gradient)
+//            println("ta trans")
+//            nodeB.backward(temp)
+//        } else {
+//            println("no ta trans")
+//            nodeB.backward(nodeA.value().matmul(gradient))
+//        }
+    }
+
     override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
 
         if (gradient.shape().size == 2) {
-            if (nodeA.transposed()) {
-                nodeA.backward(gradient.matmul(nodeB.value().transpose()).transpose())
-            } else {
-                nodeA.backward(gradient.matmul(nodeB.value().transpose()))
-            }
-
-            if (nodeB.transposed()) {
-                // Calculate d(A * B^T)/dB = (A^T * gradient)^T
-                val temp = nodeA.value().transpose().matmul(gradient)
-                nodeB.backward(temp.transpose())
-            } else {
-                // Calculate d(A * B)/dB = A^T * gradient
-                nodeB.backward(nodeA.value().transpose().matmul(gradient))
-            }
+            backward2D()
         } else if (gradient.shape().size == 3) {
-            if (nodeA.transposed()) {
-                nodeA.backward(gradient.matmul(nodeB.value().transposeLast2Dims()))
-            } else {
-                if (nodeB.transposed()) {
-                    nodeA.backward(gradient.matmul(nodeB.value().transposeLast2Dims()))
-                } else {
-                    nodeA.backward(gradient.matmul(nodeB.value()))
-                }
-            }
-
-            if (nodeB.transposed()) {
-                val temp = nodeA.value().transposeLast2Dims().matmul(gradient)
-                nodeB.backward(temp.transposeLast2Dims())
-            } else {
-                nodeB.backward(nodeA.value().transposeLast2Dims().matmul(gradient))
-            }
+            backward3D()
         } else {
             throw RuntimeException("Operation not supported for that NDarray shape")
         }
