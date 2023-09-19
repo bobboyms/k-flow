@@ -71,7 +71,7 @@ class NodeOperationTests {
 
     }
 
-    private val TOLERANCE = 1e-4  // Define your own tolerance level
+    private val TOLERANCE = 1e-4
 
     fun assertEquals(expected:List<Number>, actual: List<Number>) {
 

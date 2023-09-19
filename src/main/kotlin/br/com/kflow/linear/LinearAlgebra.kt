@@ -114,6 +114,16 @@ fun <T:Number> unaryMinus(atual: Value<T>): Value<T> {
     return Value(newValues, atual.shape())
 }
 
+fun <T:Number> broadcasting(other: Value<T>, row:Int): Value<T> {
+    val tempValues:ArrayList<T> = ArrayList()
+    for (i in 0..<row) {
+        for (value in other.values()) {
+            tempValues.add(value)
+        }
+    }
+    return Value(values = tempValues, shape = arrayOf(row, other.shape()[1]))
+}
+
 fun <T:Number> plus(other: Value<T>, atual: Value<T>): Value<T> {
     if (atual.shape()[0] == 1 && atual.shape()[1] == 1) {
         val newValues = other.values().map {
@@ -138,7 +148,46 @@ fun <T:Number> plus(other: Value<T>, atual: Value<T>): Value<T> {
     }
 }
 
+fun <T:Number> max(maxValue: Value<T>, atual: Value<T>): Value<T> {
+
+    if (atual.shape()[0] == 1 && atual.shape()[1] == 1) {
+        val newValues = maxValue.values().map {
+            if (it.toDouble() < atual.values()[0].toDouble()) {
+                it
+            } else {
+                0.0 as T
+            }
+        }
+        return Value(newValues, maxValue.shape())
+    } else if (maxValue.shape()[0] == 1 && maxValue.shape()[1] == 1) {
+        val newValues = atual.values().map {
+            if (it.toDouble() > maxValue.values()[0].toDouble()) {
+                it
+            } else {
+                0.0 as T
+            }
+        }
+        return Value(newValues, atual.shape())
+    } else {
+        if (!atual.shape().contentEquals(maxValue.shape())) {
+            throw IllegalArgumentException("Shapes must be the same for Max")
+        }
+
+        val newValues = atual.values().mapIndexed { index, value ->
+            if (value.toDouble() > maxValue.values()[index].toDouble()) {
+                value
+            } else {
+                0.0 as T
+            }
+        }
+
+        return Value(newValues, atual.shape())
+    }
+
+}
+
 fun <T:Number> sub(other: Value<T>, atual: Value<T>): Value<T> {
+
     if (atual.shape()[0] == 1 && atual.shape()[1] == 1) {
         val newValues = other.values().map {
             (atual.values()[0].toDouble() - it.toDouble()).toT(it::class.java)
@@ -151,7 +200,7 @@ fun <T:Number> sub(other: Value<T>, atual: Value<T>): Value<T> {
         return Value(newValues, atual.shape())
     } else {
         if (!atual.shape().contentEquals(other.shape())) {
-            throw IllegalArgumentException("Shapes must be the same for addition")
+            throw IllegalArgumentException("Shapes must be the same for subtraction")
         }
 
         val newValues = atual.values().mapIndexed { index, value ->

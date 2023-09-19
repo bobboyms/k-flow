@@ -35,10 +35,28 @@ class Value<T : Number>(
     }
 
     operator fun plus(other: Value<T>): Value<T> {
-        return br.com.kflow.linear.plus(other, this)
+
+        if (other.shape()[0] == 1 && other.shape()[1] == this.shape()[1]) {
+            return plus(broadcasting(other,shape[0]), this)
+        }
+
+        return plus(other, this)
     }
 
     operator fun minus(other: Value<T>): Value<T> {
+
+        if (other.shape()[0] == 1 && other.shape()[1] == this.shape()[1]) {
+            return sub(broadcasting(other,shape[0]), this)
+        }
+
+        if (shape[0] == 1 && shape[1] == other.shape()[1]) {
+            return sub(broadcasting(this,other.shape()[0]), other)
+        }
+
+        if (other.shape().size == this.shape().size && other.shape()[0] != shape[0]) {
+            return sub(other.transpose(), this)
+        }
+
         return sub(other, this)
     }
 
@@ -67,13 +85,6 @@ class Value<T : Number>(
         throw RuntimeException("this operation is not allowed for the shape " + shape.size + "D")
 
     }
-
-//    override fun transposeLast2Dims(): Value<T> {
-//        if (shape.size != 3) {
-//            throw RuntimeException("the NDarray shape need be 3D")
-//        }
-//        return transposeLast2Dims(this)
-//    }
 
     override fun shape(): Array<Int> {
         return shape

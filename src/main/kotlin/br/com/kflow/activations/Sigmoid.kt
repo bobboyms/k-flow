@@ -8,5 +8,5 @@ import br.com.kflow.computerGraph.plus
 import br.com.kflow.computerGraph.unaryMinus
 
 fun sigmoid(variable: Node<Number>): Node<Number> {
-    return Tensor(1) / Tensor(1) + Exp(-variable)
+    return Tensor(1.0) / Tensor(1.0) + Exp(-variable)
 }
