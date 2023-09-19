@@ -22,8 +22,20 @@ class Sum(private val nodeA: Node<Number>) : Node<Number>() {
 
     override fun backward(gradient: Value<Number>) {
         this.gradient += gradient
-        val consA = Value(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
+
+        val consA:Value<Number> = if (nodeA.isConstant()) {
+            Value(values = List(nodeA.value().size()) { 0.0 as Number }, shape = nodeA.value().shape())
+        } else {
+            Value(values = List(nodeA.value().size()) { 1.0 as Number }, shape = nodeA.value().shape())
+        }
+
         nodeA.backward(consA * gradient)
+    }
+
+    // Uma função para calcular a variância de uma lista de Double
+    fun List<Double>.variance(): Double {
+        val mean = this.sum() / this.size
+        return this.map { it - mean }.map { it * it }.sum() / this.size
     }
 
 }

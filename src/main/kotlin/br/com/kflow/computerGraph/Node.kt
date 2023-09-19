@@ -9,6 +9,15 @@ abstract class Node<T: Number> {
 
     protected var value: Value<Number>? = null
     private var transposed = false
+    private var constant = false
+
+    fun defineAsConstant() {
+        constant = true
+    }
+
+    fun isConstant():Boolean {
+        return constant
+    }
 
     fun transposed():Boolean {
         return transposed

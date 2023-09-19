@@ -1,23 +1,15 @@
-import br.com.kflow.activations.sigmoid
 import br.com.kflow.computerGraph.*
 import br.com.kflow.value.Value
+import br.com.kflow.activations.*
 import br.com.kflow.loss.*
-import br.com.kflow.nn.*
-import br.com.kflow.activations.relu
-
 
 
 fun main(args: Array<String>) {
 
-    val xValues = Tensor(values = listOf(
-        -3.0, -0.5, 0.0, 0.5, 1.0
-    ), shape = arrayOf(1,5), requiresGrad = true)
+    val nodeA = Tensor(5.0, requiresGrad = true)
+    val nodeB = Tensor(3.0, requiresGrad = true)
+    val multiplyNode = Multiply(nodeA, nodeB)
+    multiplyNode.backward(Value(1.0))
 
-    val r = relu(xValues)
-    r.value().printMatrix()
-    val c = Sum(r)
-    c.backward(Value(1))
-
-    xValues.grad().printMatrix()
-
+    nodeA.grad().printMatrix()
 }
