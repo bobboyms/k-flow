@@ -261,9 +261,6 @@ fun <T : Number> batchedMatmul(local: Value<T>, other: Value<T>): Value<T> {
     val rowsA = local.shape()[1]
     val colsB = other.shape()[2]
 
-//    println(batchSize)
-//    println(other.shape()[0])
-
     if (batchSize != other.shape()[0]) {
         throw IllegalArgumentException("The batch size is different between the 2 NDarray")
     }

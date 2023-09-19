@@ -1,4 +1,4 @@
-package br.com.kflow.linear
+package br.com.kflow.computerGraph
 
 import br.com.kflow.value.Value
 
@@ -33,18 +33,6 @@ abstract class Node<T: Number> {
         return this
     }
 
-//    fun transpose3Dlast2Dims() : Node<T> {
-//
-//        if (transposed) {
-//            return this
-//        }
-//
-//        transposed = true
-//        val t = value().transposeLast2Dims()
-//        value = Value(t.values(),shape=t.shape())
-//        return this
-//    }
-
     open fun zeroGrad() {
         this.gradient = Value(0.0 as T)
     }
@@ -67,6 +55,6 @@ operator fun Node<Number>.minus(other: Node<Number>): Node<Number> {
 operator fun Node<Number>.div(other: Node<Number>): Node<Number> {
     return Div(this, other)
 }
-operator fun Node<Number>.unaryMinus():Node<Number> {
+operator fun Node<Number>.unaryMinus(): Node<Number> {
     return UnaryMinus(this)
 }

@@ -1,4 +1,4 @@
-package br.com.kflow.linear
+package br.com.kflow.computerGraph
 
 import br.com.kflow.value.Value
 

@@ -1,5 +1,6 @@
 import br.com.kflow.linear.*
 import br.com.kflow.value.Value
+import br.com.kflow.computerGraph.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import kotlin.math.abs

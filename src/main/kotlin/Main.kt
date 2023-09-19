@@ -1,4 +1,5 @@
-import br.com.kflow.linear.*
+import br.com.kflow.computerGraph.Node
+import br.com.kflow.computerGraph.*
 import br.com.kflow.value.Value
 import java.util.*
 
@@ -8,15 +9,15 @@ class Dense(input: Int, neurons: Int) {
     private var w = Tensor(values = generateNormalDistribution(neurons*input).toList(), shape = arrayOf(neurons, input), name = "w", requiresGrad = true)
 //    var b = Variable(values = listOf(1.2f, 2.5f, 3.2f, 4.5f, 3.5f, 2.5f), shape = arrayOf(1, neurons), name = "a", requiresGrad = true)
 
-    fun forward(x:Node<Number>, activation: (variable: Node<Number>) -> Node<Number>):Node<Number> {
+    fun forward(x: Node<Number>, activation: (variable: Node<Number>) -> Node<Number>): Node<Number> {
         return activation(Matmul(x,w.transpose()))
     }
 
-    fun forward(x:Node<Number>):Node<Number> {
+    fun forward(x: Node<Number>): Node<Number> {
         return Matmul(x,w.transpose())
     }
 
-    fun w():Node<Number> {
+    fun w(): Node<Number> {
         return w
     }
 

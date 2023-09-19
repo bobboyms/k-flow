@@ -1,7 +1,7 @@
 package br.com.kflow.activations
 
 import br.com.kflow.value.Value
-import br.com.kflow.linear.Tensor
+import br.com.kflow.computerGraph.*
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
 
