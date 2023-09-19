@@ -5,6 +5,7 @@ import br.com.kflow.computerGraph.Node
 import br.com.kflow.computerGraph.Tensor
 import br.com.kflow.computerGraph.plus
 import br.com.kflow.value.Value
+import br.com.kflow.math.randomNormal
 import java.util.*
 
 class Dense(input: Int, neurons: Int) {
@@ -34,14 +35,6 @@ class Dense(input: Int, neurons: Int) {
 
     fun changeB(values: Value<Number>){
         b.changeValue(values)
-    }
-
-    fun randomNormal(size: Int, mean: Double = 0.0, stddev: Double = 1.0, seed: Long? = null): DoubleArray {
-        val random = if (seed != null) Random(seed) else Random()
-
-        return DoubleArray(size) {
-            mean + stddev * random.nextGaussian()
-        }
     }
 
 
